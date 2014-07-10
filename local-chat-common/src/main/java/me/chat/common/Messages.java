@@ -35,7 +35,7 @@ public class Messages implements Iterable<Message>, Parsable {
         try {
             return new ObjectMapper().writeValueAsString(this);
         } catch (IOException e) {
-            LOGGER.error("Error during object translation", e);
+            LOGGER.error("Error during object command", e);
             throw new TranslationException();
         }
     }

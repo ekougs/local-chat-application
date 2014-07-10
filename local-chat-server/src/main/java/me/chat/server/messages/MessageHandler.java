@@ -8,7 +8,7 @@ import me.chat.common.Messages;
  * Date: 08/07/2014
  * Time: 12:11
  */
-public interface MessageRetriever {
+public interface MessageHandler {
     void sendMessage(Message message);
 
     Messages getUndeliveredMessages(String user);

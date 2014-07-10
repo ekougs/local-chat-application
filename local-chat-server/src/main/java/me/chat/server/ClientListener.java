@@ -1,7 +1,11 @@
 package me.chat.server;
 
+import me.chat.server.command.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -13,9 +17,14 @@ import java.net.Socket;
  * Date: 06/07/2014
  * Time: 15:13
  */
+@Component
 public class ClientListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientListener.class);
     private static final int PORT = 4444;
+
+    @Autowired
+    @Qualifier("global")
+    private Command commandFactory;
 
     public void listen() {
         try {

@@ -26,36 +26,36 @@ public class InMemoryMessageRetrieverTest {
     @Autowired
     private UsersManager usersManager;
     @Autowired
-    private MessageRetriever messageRetriever;
+    private MessageHandler messageHandler;
 
     @Test
     public void testSendMessageToConnectedUser() throws Exception {
         usersManager.connect(SENNEN);
-        messageRetriever.sendMessage(new Message(PASCAL, SENNEN, "Hey"));
+        messageHandler.sendMessage(new Message(PASCAL, SENNEN, "Hey"));
     }
 
     // TODO does not work well with Spring
     @Ignore
     @Test(expected = UserNotConnectedException.class)
     public void testSendMessageToDisconnectedUser() throws Exception {
-        messageRetriever.sendMessage(new Message(PASCAL, SENNEN, "Hey"));
+        messageHandler.sendMessage(new Message(PASCAL, SENNEN, "Hey"));
     }
 
     @Test
     public void testGetUndeliveredMessages() throws Exception {
         usersManager.connect(SENNEN);
-        messageRetriever.sendMessage(new Message(PASCAL, SENNEN, "Hey"));
-        messageRetriever.sendMessage(new Message(PASCAL, SENNEN, "How are you doing ?"));
-        Assertions.assertThat(messageRetriever.getUndeliveredMessages(SENNEN))
+        messageHandler.sendMessage(new Message(PASCAL, SENNEN, "Hey"));
+        messageHandler.sendMessage(new Message(PASCAL, SENNEN, "How are you doing ?"));
+        Assertions.assertThat(messageHandler.getUndeliveredMessages(SENNEN))
                   .containsOnly(new Message(PASCAL, SENNEN, "Hey"), new Message(PASCAL, SENNEN, "How are you doing ?"));
-        messageRetriever.sendMessage(new Message(PASCAL, SENNEN, "Hello ?"));
-        Assertions.assertThat(messageRetriever.getUndeliveredMessages(SENNEN))
+        messageHandler.sendMessage(new Message(PASCAL, SENNEN, "Hello ?"));
+        Assertions.assertThat(messageHandler.getUndeliveredMessages(SENNEN))
                   .containsOnly(new Message(PASCAL, SENNEN, "Hello ?"));
     }
 
     @Ignore
     @Test(expected = NoMessageException.class)
     public void testNoUndeliveredMessages() throws Exception {
-        Assertions.assertThat(messageRetriever.getUndeliveredMessages(SENNEN));
+        Assertions.assertThat(messageHandler.getUndeliveredMessages(SENNEN));
     }
 }

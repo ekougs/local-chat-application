@@ -1,5 +1,7 @@
 package me.chat.common;
 
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +21,10 @@ public class Message implements Parsable {
     private final String recipient;
     private final String body;
 
-    public Message(String sender, String recipient, String body) {
+    @JsonCreator
+    public Message(@JsonProperty("sender") String sender,
+                   @JsonProperty("recipient") String recipient,
+                   @JsonProperty("body") String body) {
         this.sender = sender;
         this.recipient = recipient;
         this.body = body;
@@ -80,7 +85,7 @@ public class Message implements Parsable {
         try {
             return new ObjectMapper().writeValueAsString(this);
         } catch (IOException e) {
-             LOGGER.error("Error during object translation", e);
+             LOGGER.error("Error during object command", e);
             throw new TranslationException();
         }
     }

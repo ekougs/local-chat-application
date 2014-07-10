@@ -1,4 +1,4 @@
-package me.chat.server.translation;
+package me.chat.server.command;
 
 import me.chat.common.Parsable;
 
@@ -8,5 +8,7 @@ import me.chat.common.Parsable;
  * Time: 13:03
  */
 public interface Command<T extends Parsable> {
-    T get();
+    boolean accept(String request);
+
+    T get(String request);
 }

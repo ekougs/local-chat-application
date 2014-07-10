@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Time: 12:15
  */
 @Component
-public class InMemoryMessageRetriever implements MessageRetriever {
+public class InMemoryMessageHandler implements MessageHandler {
     private final Lock messagesLock = new ReentrantLock();
     @GuardedBy("messagesLock")
     private final ArrayListMultimap<String, Message> undeliveredMessages = ArrayListMultimap.create();

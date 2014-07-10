@@ -6,7 +6,12 @@ package me.chat.common;
  * Time: 12:59
  */
 public interface Parsable {
-    default String parse() {
-       throw new NoResponseExpectedException();
-    }
+    String parse();
+
+    public static final Parsable OK_PARSABLE = new Parsable() {
+        @Override
+        public String parse() {
+            return "OK";
+        }
+    };
 }
