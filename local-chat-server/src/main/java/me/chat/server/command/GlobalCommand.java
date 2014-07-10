@@ -21,11 +21,26 @@ public class GlobalCommand implements Command {
 
     @Override
     public boolean accept(String request) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        for (Command command : commands) {
+            if(command.accept(request)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
-    public Parsable get(String request) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Parsable execute(String request) {
+        Command appropriateCommand = null;
+        for (Command command : commands) {
+            if(command.accept(request)) {
+                appropriateCommand = command;
+                break;
+            }
+        }
+        if(appropriateCommand == null) {
+            throw new CommandNotFoundException();
+        }
+        return appropriateCommand.execute(request);
     }
 }

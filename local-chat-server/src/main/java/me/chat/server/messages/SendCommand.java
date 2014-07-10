@@ -33,7 +33,7 @@ public class SendCommand implements Command {
     }
 
     @Override
-    public Parsable get(String request) {
+    public Parsable execute(String request) {
         String formattedMessage = request.substring(REQUEST_PREFIX.length());
         try {
             Message messageToSend = new ObjectMapper().readValue(formattedMessage, Message.class);

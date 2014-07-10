@@ -10,5 +10,5 @@ import me.chat.common.Parsable;
 public interface Command<T extends Parsable> {
     boolean accept(String request);
 
-    T get(String request);
+    T execute(String request);
 }
