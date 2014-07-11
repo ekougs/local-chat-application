@@ -8,10 +8,5 @@ package me.chat.common;
 public interface Parsable {
     String parse();
 
-    public static final Parsable OK_PARSABLE = new Parsable() {
-        @Override
-        public String parse() {
-            return "OK";
-        }
-    };
+    public static final Parsable OK_PARSABLE = () -> "OK";
 }

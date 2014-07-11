@@ -4,6 +4,7 @@ import me.chat.common.Message;
 import me.chat.common.Parsable;
 import me.chat.common.TranslationException;
 import me.chat.server.command.Command;
+import me.chat.server.command.RequestParsers;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +30,12 @@ public class SendCommand implements Command {
 
     @Override
     public boolean accept(String request) {
-        return request.startsWith(REQUEST_PREFIX);
+        return RequestParsers.accept(REQUEST_PREFIX, request);
     }
 
     @Override
     public Parsable execute(String request) {
-        String formattedMessage = request.substring(REQUEST_PREFIX.length());
+        String formattedMessage = RequestParsers.extractBody(REQUEST_PREFIX, request);
         try {
             Message messageToSend = new ObjectMapper().readValue(formattedMessage, Message.class);
             messageHandler.sendMessage(messageToSend);

@@ -8,6 +8,7 @@ import me.chat.server.InMemoryConfiguration;
 import me.chat.server.messages.MessageHandler;
 import me.chat.server.users.UsersManager;
 import org.assertj.core.api.Assertions;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,12 @@ public class GlobalCommandTest {
     @Autowired
     private GlobalCommand globalCommand;
 
+    @Before
+    public void setUp() {
+        usersManager.connect(PASCAL);
+        usersManager.connect(SENNEN);
+    }
+
     @Test
     public void testAcceptSendCommand() throws Exception {
         TestCase.assertTrue(
@@ -39,14 +46,27 @@ public class GlobalCommandTest {
     }
 
     @Test
+    public void testAcceptUndeliveredCommand() throws Exception {
+        TestCase.assertTrue(
+                globalCommand.accept("undelivered:Sennen"));
+    }
+
+    @Test
     public void testSendCommandExecuted() throws Exception {
-        usersManager.connect(PASCAL);
-        usersManager.connect(SENNEN);
         Parsable response = globalCommand.execute(
                 "send:{\"sender\":\"Pascal\",\"recipient\":\"Sennen\",\"body\":\"Hey\"}");
         TestCase.assertEquals(response.parse(), "OK");
         Messages sennenUndeliveredMessages = messageHandler.getUndeliveredMessages(SENNEN);
         Assertions.assertThat(sennenUndeliveredMessages)
                   .containsOnly(new Message(PASCAL, SENNEN, "Hey"));
+    }
+
+    @Test
+    public void testUndeliveredCommandExecuted() throws Exception {
+        globalCommand.execute(
+                "send:{\"sender\":\"Sennen\",\"recipient\":\"Pascal\",\"body\":\"Hey\"}");
+        Parsable undeliveredMessages = globalCommand.execute("undelivered:Pascal");
+        Assertions.assertThat(undeliveredMessages.parse())
+                  .isEqualTo("[{\"sender\":\"Sennen\",\"recipient\":\"Pascal\",\"body\":\"Hey\"}]");
     }
 }
