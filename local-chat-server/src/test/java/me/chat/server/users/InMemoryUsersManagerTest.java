@@ -1,12 +1,15 @@
 package me.chat.server.users;
 
 import me.chat.server.InMemoryConfiguration;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static me.chat.common.UserConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,15 +25,11 @@ public class InMemoryUsersManagerTest {
     @Autowired
     private UsersManager usersManager = new InMemoryUsersManager();
 
-    //@Test
+    @Test
     public void testConcurrentAdditions() throws Exception {
-        Thread sennenAdditionThread = new Thread(() -> usersManager.connect(SENNEN));
-        Thread pascalAdditionThread = new Thread(() -> usersManager.connect(PASCAL));
-        sennenAdditionThread.start();
-        pascalAdditionThread.start();
+        usersManager.connect(SENNEN);
+        usersManager.connect(PASCAL);
         usersManager.connect(NGUEMA);
-        sennenAdditionThread.join();
-        pascalAdditionThread.join();
         assertThat(usersManager.getOtherUsers(SENNEN)).containsOnly(PASCAL, NGUEMA);
         assertThat(usersManager.getOtherUsers(PASCAL)).containsOnly(SENNEN, NGUEMA);
     }
@@ -42,12 +41,8 @@ public class InMemoryUsersManagerTest {
         usersManager.connect(NGUEMA);
         usersManager.connect(EKOUGS);
         assertThat(usersManager.getOtherUsers(SENNEN)).containsOnly(PASCAL, NGUEMA, EKOUGS);
-        Thread sennenRemovalThread = new Thread(() -> usersManager.disconnect(SENNEN));
-        Thread ekougsRemovalThread = new Thread(() -> usersManager.disconnect(EKOUGS));
-        sennenRemovalThread.start();
-        ekougsRemovalThread.start();
-        ekougsRemovalThread.join();
-        sennenRemovalThread.join();
+        usersManager.disconnect(SENNEN);
+        usersManager.disconnect(EKOUGS);
         assertThat(usersManager.getOtherUsers(SENNEN)).containsOnly(PASCAL, NGUEMA);
         assertThat(usersManager.getOtherUsers(PASCAL)).containsOnly(NGUEMA);
     }
@@ -59,11 +54,9 @@ public class InMemoryUsersManagerTest {
         });
     }
 
-    // TODO does not work well with Spring
-    @Ignore
     @Test(expected = UserNotConnectedException.class)
     public void testExecutionIfNotConnected() throws Exception {
-        usersManager.executeIfConnected(SENNEN, () -> {
+        usersManager.executeIfConnected(DISCONNECTED, () -> {
         });
     }
 }

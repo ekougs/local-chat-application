@@ -18,8 +18,8 @@ import java.net.Socket;
  * Time: 15:13
  */
 @Component
-public class ClientListener {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClientListener.class);
+public class RequestRecipient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestRecipient.class);
     private static final int PORT = 4444;
 
     @Autowired

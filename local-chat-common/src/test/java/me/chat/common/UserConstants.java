@@ -10,4 +10,5 @@ public class UserConstants {
     public static final String PASCAL = "Pascal";
     public static final String NGUEMA = "Nguema";
     public static final String EKOUGS = "Ekougs";
+    public static final String DISCONNECTED = "disconnectedUser";
 }

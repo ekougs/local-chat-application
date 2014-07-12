@@ -5,13 +5,13 @@ import me.chat.server.InMemoryConfiguration;
 import me.chat.server.users.UserNotConnectedException;
 import me.chat.server.users.UsersManager;
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import static me.chat.common.UserConstants.DISCONNECTED;
 import static me.chat.common.UserConstants.PASCAL;
 import static me.chat.common.UserConstants.SENNEN;
 
@@ -34,11 +34,9 @@ public class InMemoryMessageRetrieverTest {
         messageHandler.sendMessage(new Message(PASCAL, SENNEN, "Hey"));
     }
 
-    // TODO does not work well with Spring
-    @Ignore
     @Test(expected = UserNotConnectedException.class)
     public void testSendMessageToDisconnectedUser() throws Exception {
-        messageHandler.sendMessage(new Message(PASCAL, SENNEN, "Hey"));
+        messageHandler.sendMessage(new Message(PASCAL, DISCONNECTED, "Hey"));
     }
 
     @Test
@@ -53,9 +51,8 @@ public class InMemoryMessageRetrieverTest {
                   .containsOnly(new Message(PASCAL, SENNEN, "Hello ?"));
     }
 
-    @Ignore
     @Test(expected = NoMessageException.class)
     public void testNoUndeliveredMessages() throws Exception {
-        Assertions.assertThat(messageHandler.getUndeliveredMessages(SENNEN));
+        Assertions.assertThat(messageHandler.getUndeliveredMessages(DISCONNECTED));
     }
 }
