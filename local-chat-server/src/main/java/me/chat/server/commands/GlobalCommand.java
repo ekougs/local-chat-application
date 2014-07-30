@@ -1,4 +1,4 @@
-package me.chat.server.command;
+package me.chat.server.commands;
 
 import me.chat.common.Parsable;
 import org.springframework.beans.factory.annotation.Autowired;

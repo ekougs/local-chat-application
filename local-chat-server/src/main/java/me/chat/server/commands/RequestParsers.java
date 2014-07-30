@@ -1,4 +1,4 @@
-package me.chat.server.command;
+package me.chat.server.commands;
 
 /**
  * User: sennen

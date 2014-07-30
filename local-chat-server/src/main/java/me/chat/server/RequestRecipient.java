@@ -1,16 +1,19 @@
 package me.chat.server;
 
-import me.chat.server.command.Command;
+import me.chat.server.tasks.TasksManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.InetAddress;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
 
 /**
  * User: sennen
@@ -23,19 +26,33 @@ public class RequestRecipient {
     private static final int PORT = 4444;
 
     @Autowired
-    @Qualifier("global")
-    private Command commandFactory;
+    private TasksManager tasksManager;
+
+    @Autowired
+    private ExecutorService executorService;
+    private boolean stop;
 
     public void listen() {
         try {
             ServerSocket serverSocket = new ServerSocket(PORT);
-            while (true) {
-                Socket clientSocket = serverSocket.accept();
-                InetAddress localAddress = clientSocket.getLocalAddress();
+            while (!stop && !Thread.currentThread().isInterrupted()) {
+                Socket serverClientSocket = serverSocket.accept();
+                InetSocketAddress clientSocketAddress = (InetSocketAddress) serverClientSocket.getRemoteSocketAddress();
+                InputStream clientInputStream = serverClientSocket.getInputStream();
+                try (InputStreamReader inputStreamReader = new InputStreamReader(clientInputStream);
+                     BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+                    String request = bufferedReader.readLine();
+                    tasksManager.submit(clientSocketAddress, request);
+                }
+                serverClientSocket.close();
             }
 
         } catch (IOException e) {
             LOGGER.error("Could not begin clients listening", e);
         }
+    }
+
+    public void stop() {
+        this.stop = true;
     }
 }

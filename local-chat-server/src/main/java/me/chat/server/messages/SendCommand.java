@@ -3,8 +3,8 @@ package me.chat.server.messages;
 import me.chat.common.Message;
 import me.chat.common.Parsable;
 import me.chat.common.TranslationException;
-import me.chat.server.command.Command;
-import me.chat.server.command.RequestParsers;
+import me.chat.server.commands.Command;
+import me.chat.server.commands.RequestParsers;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ public class SendCommand implements Command {
             messageHandler.sendMessage(messageToSend);
             return Parsable.OK_PARSABLE;
         } catch (IOException e) {
-            LOGGER.error("Error during object command", e);
+            LOGGER.error("Error during object commands", e);
             throw new TranslationException();
         }
     }

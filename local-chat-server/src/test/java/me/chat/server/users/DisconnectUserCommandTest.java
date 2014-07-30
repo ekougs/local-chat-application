@@ -26,13 +26,13 @@ public class DisconnectUserCommandTest {
     private UsersManager usersManager;
 
     @Test
-    public void testAcceptConnectUserCommand() throws Exception {
+    public void testAcceptDisconnectUserCommand() throws Exception {
         TestCase.assertFalse(command.accept("connect:Sennen"));
         TestCase.assertTrue(command.accept("disconnect:Sennen"));
     }
 
     @Test(expected = UserNotConnectedException.class)
-    public void testConnectUserCommandExecution() throws Exception {
+    public void testDisconnectUserCommandExecution() throws Exception {
         usersManager.connect("Sennen");
         Parsable response = command.execute("disconnect:Sennen");
         TestCase.assertEquals("OK", response.parse());

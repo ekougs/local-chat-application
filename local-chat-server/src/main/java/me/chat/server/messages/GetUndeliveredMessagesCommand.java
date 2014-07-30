@@ -1,9 +1,8 @@
 package me.chat.server.messages;
 
 import me.chat.common.Messages;
-import me.chat.server.command.Command;
-import me.chat.server.command.RequestParsers;
-import me.chat.server.users.UsersManager;
+import me.chat.server.commands.Command;
+import me.chat.server.commands.RequestParsers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;

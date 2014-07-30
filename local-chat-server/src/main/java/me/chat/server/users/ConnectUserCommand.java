@@ -1,9 +1,10 @@
 package me.chat.server.users;
 
 import me.chat.common.Parsable;
-import me.chat.server.command.Command;
-import me.chat.server.command.RequestParsers;
+import me.chat.server.commands.Command;
+import me.chat.server.commands.RequestParsers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
  * Time: 12:26
  */
 @Component
+@Qualifier("childCommand")
 public class ConnectUserCommand implements Command {
     private static final String REQUEST_PREFIX = "connect:";
 

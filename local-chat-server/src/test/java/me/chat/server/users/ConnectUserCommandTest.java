@@ -36,7 +36,8 @@ public class ConnectUserCommandTest {
         Parsable response = command.execute("connect:Sennen");
         TestCase.assertEquals("OK", response.parse());
         try {
-            usersManager.executeIfConnected(SENNEN, () -> {});
+            usersManager.executeIfConnected(SENNEN, () -> {
+            });
         } catch (UserNotConnectedException e) {
             TestCase.fail("User should be connected!");
         }
