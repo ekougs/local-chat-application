@@ -31,12 +31,13 @@ public class InMemoryUsersManager implements UsersManager {
     }
 
     @Override
-    public void executeIfConnected(@Nonnull String user, @Nonnull Runnable taskToExecute) throws UserNotConnectedException {
+    public void executeIfConnected(@Nonnull String user,
+                                   @Nonnull Runnable taskToExecute) throws UserNotConnectedException {
         usersLock.lock();
-        if(isConnected(user)) {
+        if (isConnected(user)) {
             taskToExecute.run();
-        }
-        else {
+        } else {
+            usersLock.unlock();
             throw new UserNotConnectedException();
         }
         usersLock.unlock();

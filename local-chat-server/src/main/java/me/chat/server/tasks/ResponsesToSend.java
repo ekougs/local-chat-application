@@ -29,7 +29,10 @@ public class ResponsesToSend {
         responsesLock.lock();
         responsesToSend.stream()
                        .filter(responseToSend -> responseToSend.response.isDone())
-                       .forEach(execution::accept);
+                       .forEach((responseToSend) -> {
+                           responsesToSend.remove(responseToSend);
+                           execution.accept(responseToSend);
+                       });
         responsesLock.unlock();
     }
 }
