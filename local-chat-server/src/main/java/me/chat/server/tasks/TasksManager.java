@@ -1,6 +1,8 @@
 package me.chat.server.tasks;
 
 import me.chat.server.commands.GlobalCommand;
+import me.chat.server.server.Request;
+import me.chat.server.server.ResponseSender;
 import me.chat.server.tasks.util.Concurrencies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,16 +30,16 @@ public class TasksManager {
     @Autowired
     private ExecutorService executor;
 
-    public void submit(InetSocketAddress clientSocketAddress, String request) {
+    public void submit(Request request) {
         Concurrencies.buildInterruptionReadyRun(() -> {
-            CommandCallable commandCallable = new CommandCallable(clientSocketAddress, globalCommand, request);
+            CommandCallable commandCallable = new CommandCallable(request, globalCommand);
             responseSender.sendWhenPossible(commandCallable, executor.submit(commandCallable));
         })
-                     .whenInterruption(() -> this.reactToInterruption(clientSocketAddress, request))
+                     .whenInterruption(() -> this.reactToInterruption(request))
                      .run();
     }
 
-    private void reactToInterruption(InetSocketAddress clientSocketAddress, String request) {
-        LOGGER.info("Request could not be handled : " + request + " " + clientSocketAddress);
+    private void reactToInterruption(Request request) {
+        LOGGER.info("Request could not be handled : " + request);
     }
 }

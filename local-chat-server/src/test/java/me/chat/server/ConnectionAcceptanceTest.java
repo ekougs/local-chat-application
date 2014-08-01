@@ -1,5 +1,6 @@
 package me.chat.server;
 
+import me.chat.server.server.RequestRecipient;
 import me.chat.server.users.UserNotConnectedException;
 import me.chat.server.users.UsersManager;
 import org.assertj.core.api.Assertions;

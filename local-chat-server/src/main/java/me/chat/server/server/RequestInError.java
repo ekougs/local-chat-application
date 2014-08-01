@@ -1,4 +1,4 @@
-package me.chat.server.tasks;
+package me.chat.server.server;
 
 import me.chat.common.Parsable;
 import org.codehaus.jackson.map.ObjectMapper;

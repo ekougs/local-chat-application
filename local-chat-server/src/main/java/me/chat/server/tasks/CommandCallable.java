@@ -3,6 +3,7 @@ package me.chat.server.tasks;
 import me.chat.common.Parsable;
 import me.chat.server.commands.Command;
 import me.chat.server.commands.GlobalCommand;
+import me.chat.server.server.Request;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Callable;
@@ -13,26 +14,24 @@ import java.util.concurrent.Callable;
  * Time: 14:56
  */
 public class CommandCallable implements Callable<Parsable> {
-    private final InetSocketAddress address;
+    private final Request request;
     private final Command command;
-    private final String request;
 
-    CommandCallable(InetSocketAddress address, GlobalCommand command, String request) {
-        this.address = address;
+    CommandCallable(Request request, GlobalCommand command) {
         this.command = command;
         this.request = request;
     }
 
     @Override
     public Parsable call() throws Exception {
-        return command.execute(request);
+        return command.execute(request.getCommand());
     }
 
     public InetSocketAddress getAddress() {
-        return address;
+        return request.getClientAdress();
     }
 
     public String getRequest() {
-        return request;
+        return request.getCommand();
     }
 }

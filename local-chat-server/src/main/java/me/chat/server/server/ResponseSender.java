@@ -1,6 +1,7 @@
-package me.chat.server.tasks;
+package me.chat.server.server;
 
 import me.chat.common.Parsable;
+import me.chat.server.tasks.CommandCallable;
 import me.chat.server.tasks.util.Concurrencies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

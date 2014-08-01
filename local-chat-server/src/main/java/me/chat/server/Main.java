@@ -1,5 +1,6 @@
 package me.chat.server;
 
+import me.chat.server.server.RequestRecipient;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**

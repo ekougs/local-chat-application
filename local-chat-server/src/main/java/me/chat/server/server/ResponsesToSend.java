@@ -1,4 +1,4 @@
-package me.chat.server.tasks;
+package me.chat.server.server;
 
 import me.chat.server.tasks.util.Concurrencies;
 
@@ -14,15 +14,20 @@ import java.util.function.Consumer;
  * Date: 31/07/2014
  * Time: 00:42
  */
-public class ResponsesToSend {
-    private final Lock responsesLock = new ReentrantLock();
+class ResponsesToSend {
+    private Lock responsesLock = new ReentrantLock();
 
     @GuardedBy("responsesLock")
     private final BlockingQueue<ResponseToSend> responsesToSend = new ArrayBlockingQueue<>(20);
 
     public void put(ResponseToSend responseToSend) {
-        Concurrencies.buildInterruptionReadyRun(() -> responsesToSend.offer(responseToSend))
-                     .run();
+        responsesLock.lock();
+        try {
+            Concurrencies.buildInterruptionReadyRun(() -> responsesToSend.offer(responseToSend))
+                         .run();
+        } finally {
+            responsesLock.unlock();
+        }
     }
 
     public void executeForDoneResponses(Consumer<ResponseToSend> execution) {
