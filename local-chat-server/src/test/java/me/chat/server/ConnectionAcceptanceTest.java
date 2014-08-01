@@ -1,6 +1,6 @@
 package me.chat.server;
 
-import me.chat.server.server.RequestRecipient;
+import me.chat.common.UserConstants;
 import me.chat.server.users.UserNotConnectedException;
 import me.chat.server.users.UsersManager;
 import org.assertj.core.api.Assertions;
@@ -12,15 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.io.*;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.concurrent.Callable;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import static me.chat.common.UserConstants.EKOUGS;
+import static me.chat.common.UserConstants.PASCAL;
 import static me.chat.common.UserConstants.SENNEN;
 
 /**
@@ -30,23 +27,21 @@ import static me.chat.common.UserConstants.SENNEN;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = InMemoryConfiguration.class)
-public class ConnectionAcceptanceTest {
-
-    @Autowired
-    private RequestRecipient requestRecipient;
-    @Autowired
-    private ExecutorService executor;
+public class ConnectionAcceptanceTest extends AcceptanceTestCase {
     @Autowired
     private UsersManager usersManager;
 
     @Before
     public void setUp() {
-        executor.submit(requestRecipient::listen);
+        super.setUp();
     }
 
     @After
     public void tearDown() {
-        requestRecipient.stop();
+        for (String user : UserConstants.getAllUsers()) {
+            usersManager.disconnect(user);
+        }
+        super.tearDown();
     }
 
     @Test
@@ -55,7 +50,7 @@ public class ConnectionAcceptanceTest {
 
         Future<String> connectionResponse = whenCommandAsyncSent("connect:Sennen");
 
-        thenResponseOKAndUserIsConnected(SENNEN, connectionResponse);
+        thenResponseOKAndUserIsConnected(connectionResponse, SENNEN);
     }
 
     @Test
@@ -64,8 +59,16 @@ public class ConnectionAcceptanceTest {
 
         Future<String> disconnectionResponse = whenCommandAsyncSent("disconnect:Sennen");
 
-        thenResponseOKAndUserIsDisconnected(SENNEN, disconnectionResponse);
+        thenResponseOKAndUserIsDisconnected(disconnectionResponse, SENNEN);
+    }
 
+    @Test
+    public void testOtherUsersCommand() throws Exception {
+        givenUsersAreConnected(SENNEN, PASCAL, EKOUGS);
+
+        Future<String> otherUsersResponse = whenCommandAsyncSent("others:Sennen");
+
+        thenResponseIsOtherUsers(otherUsersResponse, PASCAL, EKOUGS);
     }
 
     private void givenUserIsNotConnected(String user) {
@@ -73,66 +76,39 @@ public class ConnectionAcceptanceTest {
     }
 
     private void givenUserIsConnected(String user) {
-        usersManager.connect(user);
-        checkUserIsConnected(user);
+        givenUsersAreConnected(user);
     }
 
-    private Future<String> whenCommandAsyncSent(String command) throws IOException {
-        Future<String> responseFuture = executor.submit((Callable<String>) this::getResponse);
-        executor.submit(() -> sendCommand(command));
-        return responseFuture;
+    private void givenUsersAreConnected(String... users) {
+        for (String user : users) {
+            usersManager.connect(user);
+            checkUserIsConnected(user);
+        }
     }
 
-    private void thenResponseOKAndUserIsConnected(String user, Future<String> connectionResponse)
+    private void thenResponseOKAndUserIsConnected(Future<String> connectionResponse,
+                                                  String user)
     throws IOException, ExecutionException, InterruptedException {
         Assertions.assertThat(connectionResponse.get()).isEqualTo("OK");
         checkUserIsConnected(user);
         usersManager.disconnect(user);
     }
 
-    private void thenResponseOKAndUserIsDisconnected(String user, Future<String> disconnectionResponse)
+    private void thenResponseOKAndUserIsDisconnected(Future<String> disconnectionResponse,
+                                                     String user)
     throws IOException, ExecutionException, InterruptedException {
         Assertions.assertThat(disconnectionResponse.get()).isEqualTo("OK");
         checkUserIsNotConnected(user);
     }
 
-    private static void sendCommand(String command) {
-        PrintWriter connexionSocketOutput = null;
-        Socket connexionRequestSocket = null;
-        try {
-            InetAddress localHost = InetAddress.getLocalHost();
-            connexionRequestSocket = new Socket(localHost.getHostAddress(), 4444);
-            connexionSocketOutput = new PrintWriter(connexionRequestSocket.getOutputStream());
-            connexionSocketOutput.println(command);
-            connexionSocketOutput.flush();
-            connexionSocketOutput.close();
-            connexionRequestSocket.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (connexionSocketOutput != null) {
-                connexionSocketOutput.close();
-            }
-            if (connexionRequestSocket != null) {
-                try {
-                    connexionRequestSocket.close();
-                } catch (IOException e) {
-                }
-            }
+    private void thenResponseIsOtherUsers(Future<String> otherUsersResponse,
+                                          String... otherUsers) throws ExecutionException, InterruptedException {
+        StringBuilder otherUsersString = new StringBuilder();
+        for (String otherUser : otherUsers) {
+            otherUsersString.append("\"").append(otherUser).append("\"").append(";");
         }
-    }
-
-    private String getResponse() throws IOException {
-        ServerSocket responseRecipient = new ServerSocket(5555);
-        Socket connectionResponseSocket = responseRecipient.accept();
-        InputStream clientInputStream = connectionResponseSocket.getInputStream();
-        String connectionResponse;
-        try (InputStreamReader inputStreamReader = new InputStreamReader(clientInputStream);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-            connectionResponse = bufferedReader.readLine();
-        }
-        responseRecipient.close();
-        return connectionResponse;
+        String expectedOtherUsers = otherUsersString.toString().substring(0, otherUsersString.length() - 1);
+        Assertions.assertThat(otherUsersResponse.get()).isEqualTo(expectedOtherUsers);
     }
 
     private void checkUserIsNotConnected(String user) {
