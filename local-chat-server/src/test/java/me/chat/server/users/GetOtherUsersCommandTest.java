@@ -20,25 +20,21 @@ import static me.chat.common.UserConstants.*;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = InMemoryConfiguration.class)
-public class GetOtherUsersCommandTest {
+public class GetOtherUsersCommandTest extends ConnectionTestCase {
     @Autowired
     private GetOtherUsersCommand command;
 
-    @Autowired
-    private UsersManager usersManager;
-
     @Before
-    public void setUp() {
-        usersManager.connect(SENNEN);
-        usersManager.connect(PASCAL);
-        usersManager.connect(NGUEMA);
+    public void setUp() throws Exception {
+        super.setUp();
+        connect(SENNEN, localHost1);
+        connect(PASCAL, localHost2);
+        connect(NGUEMA, localHost1);
     }
 
     @After
-    public void tearDown() {
-        usersManager.disconnect(SENNEN);
-        usersManager.disconnect(PASCAL);
-        usersManager.disconnect(NGUEMA);
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     @Test
@@ -50,6 +46,6 @@ public class GetOtherUsersCommandTest {
     @Test
     public void testCommandExecution() throws Exception {
         Parsable otherUsers = command.execute("others:Sennen");
-        TestCase.assertEquals(otherUsers.parse(), "\"Pascal\";\"Nguema\"");
+        TestCase.assertEquals(otherUsers.parse(), "\"Nguema\";\"Pascal\"");
     }
 }

@@ -1,6 +1,6 @@
 package me.chat.server;
 
-import me.chat.common.UserConstants;
+import me.chat.server.users.UserConnection;
 import me.chat.server.users.UserNotConnectedException;
 import me.chat.server.users.UsersManager;
 import org.assertj.core.api.Assertions;
@@ -13,12 +13,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static me.chat.common.UserConstants.EKOUGS;
-import static me.chat.common.UserConstants.PASCAL;
-import static me.chat.common.UserConstants.SENNEN;
+import static me.chat.common.UserConstants.*;
 
 /**
  * User: sennen
@@ -38,9 +37,6 @@ public class ConnectionAcceptanceTest extends AcceptanceTestCase {
 
     @After
     public void tearDown() {
-        for (String user : UserConstants.getAllUsers()) {
-            usersManager.disconnect(user);
-        }
         super.tearDown();
     }
 
@@ -48,9 +44,20 @@ public class ConnectionAcceptanceTest extends AcceptanceTestCase {
     public void testConnectionCommand() throws Exception {
         givenUserIsNotConnected(SENNEN);
 
-        Future<String> connectionResponse = whenCommandAsyncSent("connect:Sennen");
+        Future<String> connectionResponse = whenCommandAsyncSent(
+                "connect:{\"user\":\"Sennen\",\"address\":\"127.0.0.1\",\"port\":5555}");
 
         thenResponseOKAndUserIsConnected(connectionResponse, SENNEN);
+    }
+
+    @Test
+    public void testConnectionOnAlreadyConnectedUser() throws Exception {
+        givenUserIsConnected(SENNEN);
+
+        Future<String> connectionResponse = whenCommandAsyncSent(
+                "connect:{\"user\":\"Sennen\",\"address\":\"127.0.0.1\",\"port\":5555}");
+
+        thenResponseUserAlreadyConnectedAndUserIsNotConnected(connectionResponse, SENNEN);
     }
 
     @Test
@@ -81,7 +88,7 @@ public class ConnectionAcceptanceTest extends AcceptanceTestCase {
 
     private void givenUsersAreConnected(String... users) {
         for (String user : users) {
-            usersManager.connect(user);
+            usersManager.connect(new UserConnection(user, localHost1.getHostString(), localHost1.getPort()));
             checkUserIsConnected(user);
         }
     }
@@ -91,7 +98,15 @@ public class ConnectionAcceptanceTest extends AcceptanceTestCase {
     throws IOException, ExecutionException, InterruptedException {
         Assertions.assertThat(connectionResponse.get()).isEqualTo("OK");
         checkUserIsConnected(user);
+        Assertions.assertThat(usersManager.getAddress(user)).isEqualTo(new InetSocketAddress("127.0.0.1", 5555));
         usersManager.disconnect(user);
+    }
+
+    private void thenResponseUserAlreadyConnectedAndUserIsNotConnected(Future<String> connectionResponse,
+                                                                       String user)
+    throws ExecutionException, InterruptedException {
+        Assertions.assertThat(connectionResponse.get()).isEqualTo("{\"requestInError\":\"connect:{\\\"user\\\":\\\"Sennen\\\",\\\"address\\\":\\\"127.0.0.1\\\",\\\"port\\\":5555}\",\"error\":\"UserNameAlreadyUsedException\"}");
+        checkUserIsNotConnected(user);
     }
 
     private void thenResponseOKAndUserIsDisconnected(Future<String> disconnectionResponse,

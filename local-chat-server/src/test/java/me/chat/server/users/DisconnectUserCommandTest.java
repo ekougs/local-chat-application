@@ -3,6 +3,8 @@ package me.chat.server.users;
 import junit.framework.TestCase;
 import me.chat.common.Parsable;
 import me.chat.server.InMemoryConfiguration;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +20,22 @@ import static me.chat.common.UserConstants.SENNEN;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = InMemoryConfiguration.class)
-public class DisconnectUserCommandTest {
+public class DisconnectUserCommandTest extends ConnectionTestCase {
     @Autowired
     private DisconnectUserCommand command;
 
     @Autowired
     private UsersManager usersManager;
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
 
     @Test
     public void testAcceptDisconnectUserCommand() throws Exception {
@@ -33,7 +45,7 @@ public class DisconnectUserCommandTest {
 
     @Test(expected = UserNotConnectedException.class)
     public void testDisconnectUserCommandExecution() throws Exception {
-        usersManager.connect("Sennen");
+        connect("Sennen", localHost1);
         Parsable response = command.execute("disconnect:Sennen");
         TestCase.assertEquals("OK", response.parse());
         usersManager.executeIfConnected(SENNEN, () -> {

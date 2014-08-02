@@ -2,9 +2,11 @@ package me.chat.server.messages;
 
 import me.chat.common.Message;
 import me.chat.server.InMemoryConfiguration;
+import me.chat.server.users.ConnectionTestCase;
 import me.chat.server.users.UserNotConnectedException;
-import me.chat.server.users.UsersManager;
 import org.assertj.core.api.Assertions;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,15 +22,23 @@ import static me.chat.common.UserConstants.*;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = InMemoryConfiguration.class)
-public class InMemoryMessageRetrieverTest {
-    @Autowired
-    private UsersManager usersManager;
+public class InMemoryMessageRetrieverTest extends ConnectionTestCase {
     @Autowired
     private MessageHandler messageHandler;
 
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
+
     @Test
     public void testSendMessageToConnectedUser() throws Exception {
-        usersManager.connect(SENNEN);
+        connect(SENNEN, localHost1);
         messageHandler.sendMessage(new Message(PASCAL, SENNEN, "Hey"));
     }
 
@@ -39,7 +49,7 @@ public class InMemoryMessageRetrieverTest {
 
     @Test
     public void testGetUndeliveredMessages() throws Exception {
-        usersManager.connect(SENNEN);
+        connect(SENNEN, localHost1);
         messageHandler.sendMessage(new Message(PASCAL, SENNEN, "Hey"));
         messageHandler.sendMessage(new Message(PASCAL, SENNEN, "How are you doing ?"));
         Assertions.assertThat(messageHandler.getUndeliveredMessages(SENNEN))

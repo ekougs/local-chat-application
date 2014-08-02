@@ -6,9 +6,11 @@ import me.chat.common.Messages;
 import me.chat.common.Parsable;
 import me.chat.server.InMemoryConfiguration;
 import me.chat.server.messages.MessageHandler;
+import me.chat.server.users.ConnectionTestCase;
 import me.chat.server.users.UserNotConnectedException;
 import me.chat.server.users.UsersManager;
 import org.assertj.core.api.Assertions;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +27,7 @@ import static me.chat.common.UserConstants.*;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = InMemoryConfiguration.class)
-public class GlobalCommandTest {
+public class GlobalCommandTest extends ConnectionTestCase {
     @Autowired
     private UsersManager usersManager;
     @Autowired
@@ -34,9 +36,13 @@ public class GlobalCommandTest {
     private GlobalCommand globalCommand;
 
     @Before
-    public void setUp() {
-        usersManager.connect(PASCAL);
-        usersManager.connect(SENNEN);
+    public void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     @Test
@@ -53,7 +59,7 @@ public class GlobalCommandTest {
 
     @Test
     public void testAcceptConnectUserCommand() throws Exception {
-        TestCase.assertTrue(globalCommand.accept("connect:Nguema"));
+        TestCase.assertTrue(globalCommand.accept("connect:{\"user\":\"Nguema\",\"address\":\"127.0.0.1\",\"port\":5555}"));
     }
 
     @Test
@@ -68,6 +74,8 @@ public class GlobalCommandTest {
 
     @Test
     public void testSendCommandExecuted() throws Exception {
+        connect(PASCAL, localHost1);
+        connect(SENNEN, localHost2);
         Parsable response = globalCommand.execute(
                 "send:{\"sender\":\"Pascal\",\"recipient\":\"Sennen\",\"body\":\"Hey\"}");
         TestCase.assertEquals(response.parse(), "OK");
@@ -78,6 +86,8 @@ public class GlobalCommandTest {
 
     @Test
     public void testUndeliveredCommandExecuted() throws Exception {
+        connect(PASCAL, localHost1);
+        connect(SENNEN, localHost2);
         globalCommand.execute(
                 "send:{\"sender\":\"Sennen\",\"recipient\":\"Pascal\",\"body\":\"Hey\"}");
         Parsable undeliveredMessages = globalCommand.execute("undelivered:Pascal");
@@ -87,7 +97,7 @@ public class GlobalCommandTest {
 
     @Test
     public void testConnectUserCommandExecution() throws Exception {
-        Parsable response = globalCommand.execute("connect:Nguema");
+        Parsable response = globalCommand.execute("connect:{\"user\":\"Nguema\",\"address\":\"127.0.0.1\",\"port\":5555}");
         TestCase.assertEquals("OK", response.parse());
         try {
             usersManager.executeIfConnected(NGUEMA, () -> {
@@ -99,7 +109,7 @@ public class GlobalCommandTest {
 
     @Test(expected = UserNotConnectedException.class)
     public void testDisconnectUserCommandExecution() throws Exception {
-        globalCommand.execute("connect:Nguema");
+        connect(NGUEMA, localHost1);
         Parsable response = globalCommand.execute("disconnect:Nguema");
         TestCase.assertEquals("OK", response.parse());
         usersManager.executeIfConnected(NGUEMA, () -> {
@@ -108,11 +118,11 @@ public class GlobalCommandTest {
 
     @Test
     public void testCommandExecution() throws Exception {
-        usersManager.connect(SENNEN);
-        usersManager.connect(PASCAL);
-        usersManager.connect(NGUEMA);
+        connect(SENNEN, localHost1);
+        connect(PASCAL, localHost2);
+        connect(NGUEMA, localHost1);
         Parsable otherUsers = globalCommand.execute("others:Sennen");
-        TestCase.assertEquals(otherUsers.parse(), "\"Pascal\";\"Nguema\"");
+        TestCase.assertEquals("\"Nguema\";\"Pascal\"", otherUsers.parse());
         usersManager.disconnect(SENNEN);
         usersManager.disconnect(PASCAL);
         usersManager.disconnect(NGUEMA);

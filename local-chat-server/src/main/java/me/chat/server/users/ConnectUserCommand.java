@@ -3,9 +3,12 @@ package me.chat.server.users;
 import me.chat.common.Parsable;
 import me.chat.server.commands.Command;
 import me.chat.server.commands.RequestParsers;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 /**
  * User: sennen
@@ -27,8 +30,14 @@ public class ConnectUserCommand implements Command {
 
     @Override
     public Parsable execute(String request) {
-        String user = RequestParsers.extractBody(REQUEST_PREFIX, request);
-        usersManager.connect(user);
+        String formattedUserConnection = RequestParsers.extractBody(REQUEST_PREFIX, request);
+        UserConnection userConnection;
+        try {
+            userConnection = new ObjectMapper().readValue(formattedUserConnection, UserConnection.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        usersManager.connect(userConnection);
         return Parsable.OK_PARSABLE;
     }
 }

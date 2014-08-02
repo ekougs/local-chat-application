@@ -4,9 +4,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
-import java.util.ArrayList;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -19,28 +20,36 @@ import java.util.concurrent.locks.ReentrantLock;
 public class InMemoryUsersManager implements UsersManager {
     private final Lock usersLock = new ReentrantLock();
     @GuardedBy("usersLock")
-    private final List<String> users = new ArrayList<>();
+    private final Map<String, InetSocketAddress> users = new HashMap<>();
 
     @Override
-    public void connect(@Nonnull String user) {
+    public void connect(@Nonnull UserConnection userConnection) {
         usersLock.lock();
-        if (!isConnected(user)) {
-            users.add(user);
+        String user = userConnection.getUser();
+        try {
+            if (!isConnected(user)) {
+                users.put(user, userConnection.getInetSocketAddress());
+            } else {
+                throw new UserNameAlreadyUsedException();
+            }
+        } finally {
+            usersLock.unlock();
         }
-        usersLock.unlock();
     }
 
     @Override
     public void executeIfConnected(@Nonnull String user,
                                    @Nonnull Runnable taskToExecute) throws UserNotConnectedException {
         usersLock.lock();
-        if (isConnected(user)) {
-            taskToExecute.run();
-        } else {
+        try {
+            if (isConnected(user)) {
+                taskToExecute.run();
+            } else {
+                throw new UserNotConnectedException();
+            }
+        } finally {
             usersLock.unlock();
-            throw new UserNotConnectedException();
         }
-        usersLock.unlock();
     }
 
     @Override
@@ -54,14 +63,22 @@ public class InMemoryUsersManager implements UsersManager {
     public Iterable<String> getOtherUsers(@Nonnull final String user) {
         usersLock.lock();
         Iterator<String> otherUsersIterator =
-                users.stream().filter((currentUser) -> !user.equals(currentUser)).iterator();
+                users.keySet().stream().filter((currentUser) -> !user.equals(currentUser)).iterator();
         usersLock.unlock();
         return () -> otherUsersIterator;
     }
 
+    @Override
+    public InetSocketAddress getAddress(@Nonnull String user) {
+        usersLock.lock();
+        InetSocketAddress address = users.get(user);
+        usersLock.unlock();
+        return address;
+    }
+
     private boolean isConnected(@Nonnull String user) {
         usersLock.lock();
-        boolean isConnected = users.contains(user);
+        boolean isConnected = users.keySet().contains(user);
         usersLock.unlock();
         return isConnected;
     }

@@ -5,8 +5,10 @@ import me.chat.common.Message;
 import me.chat.common.Messages;
 import me.chat.common.Parsable;
 import me.chat.server.InMemoryConfiguration;
-import me.chat.server.users.UsersManager;
+import me.chat.server.users.ConnectionTestCase;
 import org.assertj.core.api.Assertions;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +25,22 @@ import static me.chat.common.UserConstants.SENNEN;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = InMemoryConfiguration.class)
-public class SendCommandTest {
+public class SendCommandTest extends ConnectionTestCase {
     @Autowired
     private SendCommand sendCommand;
-    @Autowired
-    private UsersManager usersManager;
+
     @Autowired
     private MessageHandler messageHandler;
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
 
     @Test
     public void testRequestAcceptance() throws Exception {
@@ -39,8 +50,8 @@ public class SendCommandTest {
 
     @Test
     public void testCommandResult() throws Exception {
-        usersManager.connect(PASCAL);
-        usersManager.connect(SENNEN);
+        connect(PASCAL, localHost1);
+        connect(SENNEN, localHost2);
         Parsable response = sendCommand.execute("send:{\"sender\":\"Pascal\",\"recipient\":\"Sennen\",\"body\":\"Hey\"}");
         TestCase.assertEquals(response.parse(), "OK");
         Messages sennenUndeliveredMessages = messageHandler.getUndeliveredMessages(SENNEN);

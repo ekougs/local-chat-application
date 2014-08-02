@@ -1,6 +1,7 @@
 package me.chat.server.server;
 
 import me.chat.common.Parsable;
+import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
@@ -12,9 +13,19 @@ import java.io.IOException;
  */
 public class RequestInError implements Parsable {
     private final String requestInError;
+    private final String error;
 
-    public RequestInError(String requestInError) {
+    public RequestInError(@JsonProperty("requestInError") String requestInError, Exception exception) {
         this.requestInError = requestInError;
+        this.error = exception.getClass().getSimpleName();
+    }
+
+    public String getRequestInError() {
+        return requestInError;
+    }
+
+    public String getError() {
+        return error;
     }
 
     @Override
@@ -22,7 +33,7 @@ public class RequestInError implements Parsable {
         try {
             return new ObjectMapper().writeValueAsString(this);
         } catch (IOException e) {
-            return "{requestInError:" + requestInError + "}";
+            return "{\"requestInError\":\"" + requestInError + "\", \"error\":\"" + error + "\"}";
         }
     }
 }

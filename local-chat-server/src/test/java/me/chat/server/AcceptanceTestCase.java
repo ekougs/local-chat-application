@@ -1,12 +1,15 @@
 package me.chat.server;
 
+import me.chat.common.UserConstants;
 import me.chat.server.server.RequestRecipient;
+import me.chat.server.users.UsersManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Callable;
@@ -25,12 +28,20 @@ public class AcceptanceTestCase {
     private RequestRecipient requestRecipient;
     @Autowired
     private ExecutorService executor;
+    @Autowired
+    private UsersManager usersManager;
+
+    InetSocketAddress localHost1;
 
     public void setUp() {
         executor.submit(requestRecipient::listen);
+        localHost1 = new InetSocketAddress(5555);
     }
 
     public void tearDown() {
+        for (String user : UserConstants.getAllUsers()) {
+            usersManager.disconnect(user);
+        }
         requestRecipient.stop();
     }
 

@@ -88,13 +88,14 @@ public class ResponseSender {
             sendToClient(optionalResponse.get());
         }
 
-        private void sendErrorMessage() {
-            sendToClient(new RequestInError(responseToSend.request));
+        private void sendErrorMessage(Exception exception) {
+            sendToClient(new RequestInError(responseToSend.request, exception));
         }
 
         private void sendToClient(Parsable response) {
             InetSocketAddress clientAddress = responseToSend.clientAddress;
             try {
+                // TODO getUserAddress with usersManager
                 Socket toClientSocket = new Socket(clientAddress.getAddress(), 5555);
                 PrintWriter toClientPrintWriter = new PrintWriter(toClientSocket.getOutputStream());
                 toClientPrintWriter.println(response.parse());
