@@ -55,4 +55,10 @@ public class GetUndeliveredMessagesCommandTest extends ConnectionTestCase {
         Messages undeliveredMessages = command.execute("undelivered:Sennen");
         Assertions.assertThat(undeliveredMessages).containsOnly(new Message(PASCAL, SENNEN, "Hey"));
     }
+
+    @Test
+    public void testRequestingUser() throws Exception {
+        String user = command.getRequestingUser("undelivered:Sennen");
+        Assertions.assertThat(user).isEqualTo("Sennen");
+    }
 }

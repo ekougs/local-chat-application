@@ -29,16 +29,21 @@ public class GlobalCommand implements Command {
 
     @Override
     public Parsable execute(String request) {
-        Command appropriateCommand = null;
+        Command appropriateCommand = getCommand(request);
+        return appropriateCommand.execute(request);
+    }
+
+    @Override
+    public String getRequestingUser(String request) {
+        return getCommand(request).getRequestingUser(request);
+    }
+
+    private Command getCommand(String request) {
         for (Command command : commands) {
             if (command.accept(request)) {
-                appropriateCommand = command;
-                break;
+                return command;
             }
         }
-        if (appropriateCommand == null) {
-            throw new CommandNotFoundException();
-        }
-        return appropriateCommand.execute(request);
+        throw new CommandNotFoundException();
     }
 }

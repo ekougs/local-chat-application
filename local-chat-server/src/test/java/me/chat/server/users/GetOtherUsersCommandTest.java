@@ -3,6 +3,7 @@ package me.chat.server.users;
 import junit.framework.TestCase;
 import me.chat.common.Parsable;
 import me.chat.server.InMemoryConfiguration;
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,5 +48,11 @@ public class GetOtherUsersCommandTest extends ConnectionTestCase {
     public void testCommandExecution() throws Exception {
         Parsable otherUsers = command.execute("others:Sennen");
         TestCase.assertEquals(otherUsers.parse(), "\"Nguema\";\"Pascal\"");
+    }
+
+    @Test
+    public void testRequestingUser() throws Exception {
+        String user = command.getRequestingUser("others:Sennen");
+        Assertions.assertThat(user).isEqualTo("Sennen");
     }
 }

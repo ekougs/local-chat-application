@@ -11,4 +11,6 @@ public interface Command<T extends Parsable> {
     boolean accept(String request);
 
     T execute(String request);
+
+    String getRequestingUser(String request);
 }

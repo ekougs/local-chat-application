@@ -27,8 +27,17 @@ public class GetOtherUsersCommand implements Command {
 
     @Override
     public Parsable execute(String request) {
-        String user = RequestParsers.extractBody(REQUEST_PREFIX, request);
+        String user = getUser(request);
         return new StringIterableParsable(usersManager.getOtherUsers(user));
+    }
+
+    @Override
+    public String getRequestingUser(String request) {
+        return getUser(request);
+    }
+
+    private String getUser(String request) {
+        return RequestParsers.extractBody(REQUEST_PREFIX, request);
     }
 
     private static class StringIterableParsable implements Parsable {

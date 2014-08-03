@@ -30,6 +30,18 @@ public class ConnectUserCommand implements Command {
 
     @Override
     public Parsable execute(String request) {
+        UserConnection userConnection = getUserConnection(request);
+        usersManager.connect(userConnection);
+        return Parsable.OK_PARSABLE;
+    }
+
+    @Override
+    public String getRequestingUser(String request) {
+        UserConnection userConnection = getUserConnection(request);
+        return userConnection.getUser();
+    }
+
+    private UserConnection getUserConnection(String request) {
         String formattedUserConnection = RequestParsers.extractBody(REQUEST_PREFIX, request);
         UserConnection userConnection;
         try {
@@ -37,7 +49,6 @@ public class ConnectUserCommand implements Command {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        usersManager.connect(userConnection);
-        return Parsable.OK_PARSABLE;
+        return userConnection;
     }
 }

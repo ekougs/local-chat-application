@@ -5,7 +5,6 @@ import me.chat.server.commands.Command;
 import me.chat.server.commands.GlobalCommand;
 import me.chat.server.server.Request;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.Callable;
 
 /**
@@ -27,8 +26,8 @@ public class CommandCallable implements Callable<Parsable> {
         return command.execute(request.getCommand());
     }
 
-    public InetSocketAddress getAddress() {
-        return request.getClientAdress();
+    public String getRequestingUser() {
+        return command.getRequestingUser(request.getCommand());
     }
 
     public String getRequest() {

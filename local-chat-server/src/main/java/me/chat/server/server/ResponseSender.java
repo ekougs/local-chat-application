@@ -3,6 +3,7 @@ package me.chat.server.server;
 import me.chat.common.Parsable;
 import me.chat.server.tasks.CommandCallable;
 import me.chat.server.tasks.util.Concurrencies;
+import me.chat.server.users.UsersManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +29,16 @@ public class ResponseSender {
     @Autowired
     private ExecutorService executor;
 
+    @Autowired
+    private UsersManager usersManager;
+
     private final ResponsesToSend responsesToSend = new ResponsesToSend();
     private boolean sending = false;
 
     public void sendWhenPossible(CommandCallable commandCallable, Future<Parsable> responseFuture) {
+        InetSocketAddress responseAddress = usersManager.getAddress(commandCallable.getRequestingUser());
         ResponseToSend responseToSend = new ResponseToSend(commandCallable.getRequest(),
-                                                           commandCallable.getAddress(),
+                                                           responseAddress,
                                                            responseFuture);
         responsesToSend.put(responseToSend);
         sendDoneResponses();

@@ -76,8 +76,10 @@ public class GlobalCommandTest extends ConnectionTestCase {
     public void testSendCommandExecuted() throws Exception {
         connect(PASCAL, localHost1);
         connect(SENNEN, localHost2);
-        Parsable response = globalCommand.execute(
-                "send:{\"sender\":\"Pascal\",\"recipient\":\"Sennen\",\"body\":\"Hey\"}");
+        String request = "send:{\"sender\":\"Pascal\",\"recipient\":\"Sennen\",\"body\":\"Hey\"}";
+        String user = globalCommand.getRequestingUser(request);
+        Assertions.assertThat(user).isEqualTo("Pascal");
+        Parsable response = globalCommand.execute(request);
         TestCase.assertEquals(response.parse(), "OK");
         Messages sennenUndeliveredMessages = messageHandler.getUndeliveredMessages(SENNEN);
         Assertions.assertThat(sennenUndeliveredMessages)
@@ -90,6 +92,8 @@ public class GlobalCommandTest extends ConnectionTestCase {
         connect(SENNEN, localHost2);
         globalCommand.execute(
                 "send:{\"sender\":\"Sennen\",\"recipient\":\"Pascal\",\"body\":\"Hey\"}");
+        String user = globalCommand.getRequestingUser("undelivered:Pascal");
+        Assertions.assertThat(user).isEqualTo("Pascal");
         Parsable undeliveredMessages = globalCommand.execute("undelivered:Pascal");
         Assertions.assertThat(undeliveredMessages.parse())
                   .isEqualTo("[{\"sender\":\"Sennen\",\"recipient\":\"Pascal\",\"body\":\"Hey\"}]");
@@ -97,7 +101,10 @@ public class GlobalCommandTest extends ConnectionTestCase {
 
     @Test
     public void testConnectUserCommandExecution() throws Exception {
-        Parsable response = globalCommand.execute("connect:{\"user\":\"Nguema\",\"address\":\"127.0.0.1\",\"port\":5555}");
+        String request = "connect:{\"user\":\"Nguema\",\"address\":\"127.0.0.1\",\"port\":5555}";
+        String user = globalCommand.getRequestingUser(request);
+        Assertions.assertThat(user).isEqualTo("Nguema");
+        Parsable response = globalCommand.execute(request);
         TestCase.assertEquals("OK", response.parse());
         try {
             usersManager.executeIfConnected(NGUEMA, () -> {
@@ -110,7 +117,10 @@ public class GlobalCommandTest extends ConnectionTestCase {
     @Test(expected = UserNotConnectedException.class)
     public void testDisconnectUserCommandExecution() throws Exception {
         connect(NGUEMA, localHost1);
-        Parsable response = globalCommand.execute("disconnect:Nguema");
+        String request = "disconnect:Nguema";
+        String user = globalCommand.getRequestingUser(request);
+        Assertions.assertThat(user).isEqualTo("Nguema");
+        Parsable response = globalCommand.execute(request);
         TestCase.assertEquals("OK", response.parse());
         usersManager.executeIfConnected(NGUEMA, () -> {
         });
@@ -121,7 +131,10 @@ public class GlobalCommandTest extends ConnectionTestCase {
         connect(SENNEN, localHost1);
         connect(PASCAL, localHost2);
         connect(NGUEMA, localHost1);
-        Parsable otherUsers = globalCommand.execute("others:Sennen");
+        String request = "others:Sennen";
+        String user = globalCommand.getRequestingUser(request);
+        Assertions.assertThat(user).isEqualTo("Sennen");
+        Parsable otherUsers = globalCommand.execute(request);
         TestCase.assertEquals("\"Nguema\";\"Pascal\"", otherUsers.parse());
         usersManager.disconnect(SENNEN);
         usersManager.disconnect(PASCAL);

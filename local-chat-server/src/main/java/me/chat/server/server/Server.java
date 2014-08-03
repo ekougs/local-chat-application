@@ -46,11 +46,10 @@ class Server {
             } catch (SocketTimeoutException e) {
                 throw new RequestNotRetrievedException();
             }
-            final InetSocketAddress clientSocketAddress = (InetSocketAddress) serverClientSocket.getRemoteSocketAddress();
             InputStream clientInputStream = serverClientSocket.getInputStream();
             try (InputStreamReader inputStreamReader = new InputStreamReader(clientInputStream);
                  BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-                return new Request(clientSocketAddress, bufferedReader.readLine());
+                return new Request(bufferedReader.readLine());
             } finally {
                 serverClientSocket.close();
             }

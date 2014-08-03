@@ -3,6 +3,7 @@ package me.chat.server.users;
 import junit.framework.TestCase;
 import me.chat.common.Parsable;
 import me.chat.server.InMemoryConfiguration;
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,5 +51,11 @@ public class DisconnectUserCommandTest extends ConnectionTestCase {
         TestCase.assertEquals("OK", response.parse());
         usersManager.executeIfConnected(SENNEN, () -> {
         });
+    }
+
+    @Test
+    public void testRequestingUser() throws Exception {
+        String requestingUser = command.getRequestingUser("disconnect:Sennen");
+        Assertions.assertThat(requestingUser).isEqualTo("Sennen");
     }
 }

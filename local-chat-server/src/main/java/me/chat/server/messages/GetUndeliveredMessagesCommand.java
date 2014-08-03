@@ -27,7 +27,16 @@ public class GetUndeliveredMessagesCommand implements Command<Messages> {
 
     @Override
     public Messages execute(String request) {
-        String user = RequestParsers.extractBody(REQUEST_PREFIX, request);
+        String user = getUser(request);
         return messageHandler.getUndeliveredMessages(user);
+    }
+
+    @Override
+    public String getRequestingUser(String request) {
+        return getUser(request);
+    }
+
+    private String getUser(String request) {
+        return RequestParsers.extractBody(REQUEST_PREFIX, request);
     }
 }

@@ -35,14 +35,28 @@ public class SendCommand implements Command {
 
     @Override
     public Parsable execute(String request) {
-        String formattedMessage = RequestParsers.extractBody(REQUEST_PREFIX, request);
         try {
-            Message messageToSend = new ObjectMapper().readValue(formattedMessage, Message.class);
+            Message messageToSend = getMessage(request);
             messageHandler.sendMessage(messageToSend);
             return Parsable.OK_PARSABLE;
         } catch (IOException e) {
             LOGGER.error("Error during object commands", e);
             throw new TranslationException();
         }
+    }
+
+    @Override
+    public String getRequestingUser(String request) {
+        try {
+            return getMessage(request).getSender();
+        } catch (IOException e) {
+            LOGGER.error("Error during object commands", e);
+            throw new TranslationException();
+        }
+    }
+
+    private Message getMessage(String request) throws IOException {
+        String formattedMessage = RequestParsers.extractBody(REQUEST_PREFIX, request);
+        return new ObjectMapper().readValue(formattedMessage, Message.class);
     }
 }

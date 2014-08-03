@@ -27,8 +27,17 @@ public class DisconnectUserCommand implements Command {
 
     @Override
     public Parsable execute(String request) {
-        String user = RequestParsers.extractBody(REQUEST_PREFIX, request);
+        String user = getUser(request);
         usersManager.disconnect(user);
         return Parsable.OK_PARSABLE;
+    }
+
+    @Override
+    public String getRequestingUser(String request) {
+        return getUser(request);
+    }
+
+    private String getUser(String request) {
+        return RequestParsers.extractBody(REQUEST_PREFIX, request);
     }
 }

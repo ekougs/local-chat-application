@@ -58,4 +58,11 @@ public class ConnectUserCommandTest extends ConnectionTestCase {
         }
         Assertions.assertThat(usersManager.getAddress(SENNEN)).isEqualTo(new InetSocketAddress("127.0.0.1", 5555));
     }
+
+    @Test
+    public void testRequestingUser() throws Exception {
+        String requestingUser =
+                command.getRequestingUser("connect:{\"user\":\"Sennen\",\"address\":\"127.0.0.1\",\"port\":5555}");
+        Assertions.assertThat(requestingUser).isEqualTo("Sennen");
+    }
 }

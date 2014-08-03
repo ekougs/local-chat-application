@@ -58,4 +58,11 @@ public class SendCommandTest extends ConnectionTestCase {
         Assertions.assertThat(sennenUndeliveredMessages)
                   .containsOnly(new Message(PASCAL, SENNEN, "Hey"));
     }
+
+    @Test
+    public void testRequestingUser() throws Exception {
+        String user =
+                sendCommand.getRequestingUser("send:{\"sender\":\"Pascal\",\"recipient\":\"Sennen\",\"body\":\"Hey\"}");
+        Assertions.assertThat(user).isEqualTo("Pascal");
+    }
 }

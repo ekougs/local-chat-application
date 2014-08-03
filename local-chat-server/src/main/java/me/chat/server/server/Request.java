@@ -8,16 +8,10 @@ import java.net.InetSocketAddress;
  * Time: 23:35
  */
 public class Request {
-    private final InetSocketAddress clientAdress;
     private final String command;
 
-    public Request(InetSocketAddress clientAdress, String command) {
-        this.clientAdress = clientAdress;
+    public Request(String command) {
         this.command = command;
-    }
-
-    public InetSocketAddress getClientAdress() {
-        return clientAdress;
     }
 
     public String getCommand() {
@@ -27,8 +21,7 @@ public class Request {
     @Override
     public String toString() {
         return "Request{" +
-               "clientAdress=" + clientAdress +
-               ", command='" + command + '\'' +
+               "command='" + command + '\'' +
                '}';
     }
 }
