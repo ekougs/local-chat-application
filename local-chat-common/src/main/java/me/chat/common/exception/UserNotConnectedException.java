@@ -1,4 +1,4 @@
-package me.chat.server.users;
+package me.chat.common.exception;
 
 /**
  * User: sennen

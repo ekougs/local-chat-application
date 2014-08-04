@@ -2,6 +2,7 @@ package me.chat.server;
 
 import me.chat.common.UserConstants;
 import me.chat.server.server.RequestRecipient;
+import me.chat.server.users.UserConnection;
 import me.chat.server.users.UsersManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
@@ -26,16 +28,20 @@ public class AcceptanceTestCase {
 
     @Autowired
     private RequestRecipient requestRecipient;
-    @Autowired
-    private ExecutorService executor;
+
+    private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
     @Autowired
     private UsersManager usersManager;
 
     InetSocketAddress localHost1;
 
+    InetSocketAddress localHost2;
+
     public void setUp() {
-        executor.submit(requestRecipient::listen);
         localHost1 = new InetSocketAddress(5555);
+        localHost2 = new InetSocketAddress(5556);
+        executor.submit(requestRecipient::listen);
     }
 
     public void tearDown() {
@@ -49,6 +55,10 @@ public class AcceptanceTestCase {
         Future<String> responseFuture = executor.submit((Callable<String>) AcceptanceTestCase::getResponse);
         executor.submit(() -> AcceptanceTestCase.sendCommand(command));
         return responseFuture;
+    }
+
+    void connect(String user, InetSocketAddress address) {
+        usersManager.connect(new UserConnection(user, address.getHostString(), address.getPort()));
     }
 
     private static void sendCommand(String command) {
@@ -79,15 +89,12 @@ public class AcceptanceTestCase {
     }
 
     private static String getResponse() throws IOException {
-        ServerSocket responseRecipient = new ServerSocket(5555);
-        Socket responseSocket = responseRecipient.accept();
-        InputStream clientInputStream = responseSocket.getInputStream();
-        String response;
-        try (InputStreamReader inputStreamReader = new InputStreamReader(clientInputStream);
+        try (ServerSocket responseRecipient = new ServerSocket(5555);
+             Socket responseSocket = responseRecipient.accept();
+             InputStream clientInputStream = responseSocket.getInputStream();
+             InputStreamReader inputStreamReader = new InputStreamReader(clientInputStream);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-            response = bufferedReader.readLine();
+            return bufferedReader.readLine();
         }
-        responseRecipient.close();
-        return response;
     }
 }

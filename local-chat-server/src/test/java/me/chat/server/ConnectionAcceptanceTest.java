@@ -1,7 +1,6 @@
 package me.chat.server;
 
-import me.chat.server.users.UserConnection;
-import me.chat.server.users.UserNotConnectedException;
+import me.chat.common.exception.UserNotConnectedException;
 import me.chat.server.users.UsersManager;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
@@ -57,7 +56,7 @@ public class ConnectionAcceptanceTest extends AcceptanceTestCase {
         Future<String> connectionResponse = whenCommandAsyncSent(
                 "connect:{\"user\":\"Sennen\",\"address\":\"127.0.0.1\",\"port\":5555}");
 
-        thenResponseUserAlreadyConnectedAndUserIsNotConnected(connectionResponse, SENNEN);
+        thenResponseUserAlreadyConnected(connectionResponse);
     }
 
     @Test
@@ -88,7 +87,7 @@ public class ConnectionAcceptanceTest extends AcceptanceTestCase {
 
     private void givenUsersAreConnected(String... users) {
         for (String user : users) {
-            usersManager.connect(new UserConnection(user, localHost1.getHostString(), localHost1.getPort()));
+            connect(user, localHost1);
             checkUserIsConnected(user);
         }
     }
@@ -102,11 +101,10 @@ public class ConnectionAcceptanceTest extends AcceptanceTestCase {
         usersManager.disconnect(user);
     }
 
-    private void thenResponseUserAlreadyConnectedAndUserIsNotConnected(Future<String> connectionResponse,
-                                                                       String user)
+    private void thenResponseUserAlreadyConnected(Future<String> connectionResponse)
     throws ExecutionException, InterruptedException {
-        Assertions.assertThat(connectionResponse.get()).isEqualTo("{\"requestInError\":\"connect:{\\\"user\\\":\\\"Sennen\\\",\\\"address\\\":\\\"127.0.0.1\\\",\\\"port\\\":5555}\",\"error\":\"UserNameAlreadyUsedException\"}");
-        checkUserIsNotConnected(user);
+        Assertions.assertThat(connectionResponse.get()).isEqualTo(
+                "{\"requestInError\":\"connect:{\\\"user\\\":\\\"Sennen\\\",\\\"address\\\":\\\"127.0.0.1\\\",\\\"port\\\":5555}\",\"error\":\"UserNameAlreadyUsedException\"}");
     }
 
     private void thenResponseOKAndUserIsDisconnected(Future<String> disconnectionResponse,

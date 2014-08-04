@@ -7,7 +7,7 @@ import me.chat.common.Parsable;
 import me.chat.server.InMemoryConfiguration;
 import me.chat.server.messages.MessageHandler;
 import me.chat.server.users.ConnectionTestCase;
-import me.chat.server.users.UserNotConnectedException;
+import me.chat.common.exception.UserNotConnectedException;
 import me.chat.server.users.UsersManager;
 import org.assertj.core.api.Assertions;
 import org.junit.After;

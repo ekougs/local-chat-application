@@ -2,23 +2,21 @@ package me.chat.server.server;
 
 import me.chat.common.Parsable;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.concurrent.Future;
 
 /**
-* User: sennen
-* Date: 31/07/2014
-* Time: 00:43
-*/
+ * User: sennen
+ * Date: 31/07/2014
+ * Time: 00:43
+ */
 class ResponseToSend {
     final String request;
-    final InetSocketAddress clientAddress;
+    final String user;
     final Future<Parsable> response;
 
-    ResponseToSend(String request, InetSocketAddress clientAddress, Future<Parsable> response) {
+    ResponseToSend(String request, String user, Future<Parsable> response) {
         this.request = request;
-        this.clientAddress = clientAddress;
+        this.user = user;
         this.response = response;
     }
 }

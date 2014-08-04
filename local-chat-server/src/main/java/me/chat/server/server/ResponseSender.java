@@ -29,17 +29,16 @@ public class ResponseSender {
     @Autowired
     private ExecutorService executor;
 
+    private final ResponsesToSend responsesToSend = new ResponsesToSend();
+
+    private boolean sending = false;
+
     @Autowired
     private UsersManager usersManager;
 
-    private final ResponsesToSend responsesToSend = new ResponsesToSend();
-    private boolean sending = false;
-
     public void sendWhenPossible(CommandCallable commandCallable, Future<Parsable> responseFuture) {
-        InetSocketAddress responseAddress = usersManager.getAddress(commandCallable.getRequestingUser());
-        ResponseToSend responseToSend = new ResponseToSend(commandCallable.getRequest(),
-                                                           responseAddress,
-                                                           responseFuture);
+        ResponseToSend responseToSend =
+                new ResponseToSend(commandCallable.getRequest(), commandCallable.getRequestingUser(), responseFuture);
         responsesToSend.put(responseToSend);
         sendDoneResponses();
     }
@@ -70,7 +69,8 @@ public class ResponseSender {
     }
 
     private void reactToInterruption(ResponseToSend responseToSend) {
-        LOGGER.info("Request could not be handled : " + responseToSend.request + " " + responseToSend.clientAddress);
+        InetSocketAddress clientAddress = usersManager.getAddress(responseToSend.user);
+        LOGGER.info("Request could not be handled : " + responseToSend.request + " " + clientAddress);
     }
 
     private class SendResponseTask implements Runnable {
@@ -98,9 +98,8 @@ public class ResponseSender {
         }
 
         private void sendToClient(Parsable response) {
-            InetSocketAddress clientAddress = responseToSend.clientAddress;
+            InetSocketAddress clientAddress = usersManager.getAddress(responseToSend.user);
             try {
-                // TODO getUserAddress with usersManager
                 Socket toClientSocket = new Socket(clientAddress.getAddress(), 5555);
                 PrintWriter toClientPrintWriter = new PrintWriter(toClientSocket.getOutputStream());
                 toClientPrintWriter.println(response.parse());

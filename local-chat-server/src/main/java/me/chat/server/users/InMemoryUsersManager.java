@@ -1,13 +1,13 @@
 package me.chat.server.users;
 
+import me.chat.common.exception.UserNameAlreadyUsedException;
+import me.chat.common.exception.UserNotConnectedException;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -20,7 +20,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class InMemoryUsersManager implements UsersManager {
     private final Lock usersLock = new ReentrantLock();
     @GuardedBy("usersLock")
-    private final Map<String, InetSocketAddress> users = new HashMap<>();
+    private final Set<String> users = new HashSet<>();
+    @GuardedBy("usersLock")
+    private final Map<String, InetSocketAddress> userConnections = new HashMap<>();
 
     @Override
     public void connect(@Nonnull UserConnection userConnection) {
@@ -28,7 +30,8 @@ public class InMemoryUsersManager implements UsersManager {
         String user = userConnection.getUser();
         try {
             if (!isConnected(user)) {
-                users.put(user, userConnection.getInetSocketAddress());
+                users.add(user);
+                userConnections.put(user, userConnection.getInetSocketAddress());
             } else {
                 throw new UserNameAlreadyUsedException();
             }
@@ -63,7 +66,7 @@ public class InMemoryUsersManager implements UsersManager {
     public Iterable<String> getOtherUsers(@Nonnull final String user) {
         usersLock.lock();
         Iterator<String> otherUsersIterator =
-                users.keySet().stream().filter((currentUser) -> !user.equals(currentUser)).iterator();
+                users.stream().filter((currentUser) -> !user.equals(currentUser)).iterator();
         usersLock.unlock();
         return () -> otherUsersIterator;
     }
@@ -71,14 +74,16 @@ public class InMemoryUsersManager implements UsersManager {
     @Override
     public InetSocketAddress getAddress(@Nonnull String user) {
         usersLock.lock();
-        InetSocketAddress address = users.get(user);
-        usersLock.unlock();
-        return address;
+        try {
+            return userConnections.get(user);
+        } finally {
+            usersLock.unlock();
+        }
     }
 
     private boolean isConnected(@Nonnull String user) {
         usersLock.lock();
-        boolean isConnected = users.keySet().contains(user);
+        boolean isConnected = users.contains(user);
         usersLock.unlock();
         return isConnected;
     }

@@ -1,5 +1,7 @@
 package me.chat.server.users;
 
+import me.chat.common.exception.UserNameAlreadyUsedException;
+import me.chat.common.exception.UserNotConnectedException;
 import me.chat.server.InMemoryConfiguration;
 import org.junit.After;
 import org.junit.Before;

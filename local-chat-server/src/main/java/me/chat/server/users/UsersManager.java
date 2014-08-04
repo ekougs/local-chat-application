@@ -1,5 +1,7 @@
 package me.chat.server.users;
 
+import me.chat.common.exception.UserNotConnectedException;
+
 import javax.annotation.Nonnull;
 import java.net.InetSocketAddress;
 

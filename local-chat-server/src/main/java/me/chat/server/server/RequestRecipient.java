@@ -2,8 +2,6 @@ package me.chat.server.server;
 
 import me.chat.server.tasks.TasksManager;
 import me.chat.server.tasks.util.Concurrencies;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +14,6 @@ import java.util.concurrent.ExecutorService;
  */
 @Component
 public class RequestRecipient {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RequestRecipient.class);
-
     @Autowired
     private TasksManager tasksManager;
 
@@ -28,20 +24,23 @@ public class RequestRecipient {
     private Server server;
 
     public void listen() {
+        server.open();
         while (!Thread.currentThread().isInterrupted()) {
-            final Request request;
+            final String request;
             try {
                 request = server.getRequest();
                 executorService.submit(() -> tasksManager.submit(request));
             } catch (RequestNotRetrievedException e) {
                 Concurrencies.buildInterruptionReadyRun(() -> Thread.sleep(50))
-                        .whenInterruption(executorService::shutdown)
-                        .run();
+                             .whenInterruption(executorService::shutdown)
+                             .run();
+            } catch (ServerClosedException e) {
+                break;
             }
         }
     }
 
     public void stop() {
-        server.stop();
+        server.close();
     }
 }

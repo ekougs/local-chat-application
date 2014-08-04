@@ -1,9 +1,10 @@
 package me.chat.server.messages;
 
 import me.chat.common.Message;
+import me.chat.common.exception.NoMessageException;
 import me.chat.server.InMemoryConfiguration;
 import me.chat.server.users.ConnectionTestCase;
-import me.chat.server.users.UserNotConnectedException;
+import me.chat.common.exception.UserNotConnectedException;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;

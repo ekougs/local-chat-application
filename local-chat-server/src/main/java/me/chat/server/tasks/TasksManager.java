@@ -1,7 +1,6 @@
 package me.chat.server.tasks;
 
 import me.chat.server.commands.GlobalCommand;
-import me.chat.server.server.Request;
 import me.chat.server.server.ResponseSender;
 import me.chat.server.tasks.util.Concurrencies;
 import org.slf4j.Logger;
@@ -9,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -19,7 +17,7 @@ import java.util.concurrent.ExecutorService;
  */
 @Component
 public class TasksManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ResponseSender.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TasksManager.class);
 
     @Autowired
     private GlobalCommand globalCommand;
@@ -30,7 +28,7 @@ public class TasksManager {
     @Autowired
     private ExecutorService executor;
 
-    public void submit(Request request) {
+    public void submit(String request) {
         Concurrencies.buildInterruptionReadyRun(() -> {
             CommandCallable commandCallable = new CommandCallable(request, globalCommand);
             responseSender.sendWhenPossible(commandCallable, executor.submit(commandCallable));
@@ -39,7 +37,7 @@ public class TasksManager {
                      .run();
     }
 
-    private void reactToInterruption(Request request) {
+    private void reactToInterruption(String request) {
         LOGGER.info("Request could not be handled : " + request);
     }
 }

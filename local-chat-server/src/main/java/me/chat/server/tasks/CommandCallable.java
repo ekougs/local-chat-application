@@ -3,7 +3,6 @@ package me.chat.server.tasks;
 import me.chat.common.Parsable;
 import me.chat.server.commands.Command;
 import me.chat.server.commands.GlobalCommand;
-import me.chat.server.server.Request;
 
 import java.util.concurrent.Callable;
 
@@ -13,24 +12,24 @@ import java.util.concurrent.Callable;
  * Time: 14:56
  */
 public class CommandCallable implements Callable<Parsable> {
-    private final Request request;
+    private final String request;
     private final Command command;
 
-    CommandCallable(Request request, GlobalCommand command) {
+    CommandCallable(String request, GlobalCommand command) {
         this.command = command;
         this.request = request;
     }
 
     @Override
     public Parsable call() throws Exception {
-        return command.execute(request.getCommand());
+        return command.execute(request);
     }
 
     public String getRequestingUser() {
-        return command.getRequestingUser(request.getCommand());
+        return command.getRequestingUser(request);
     }
 
     public String getRequest() {
-        return request.getCommand();
+        return request;
     }
 }

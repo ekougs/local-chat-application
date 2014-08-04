@@ -2,6 +2,7 @@ package me.chat.server.users;
 
 import junit.framework.TestCase;
 import me.chat.common.Parsable;
+import me.chat.common.exception.UserNotConnectedException;
 import me.chat.server.InMemoryConfiguration;
 import org.assertj.core.api.Assertions;
 import org.junit.After;

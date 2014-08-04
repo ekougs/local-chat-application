@@ -3,7 +3,8 @@ package me.chat.server.messages;
 import com.google.common.collect.ArrayListMultimap;
 import me.chat.common.Message;
 import me.chat.common.Messages;
-import me.chat.server.users.UserNotConnectedException;
+import me.chat.common.exception.NoMessageException;
+import me.chat.common.exception.UserNotConnectedException;
 import me.chat.server.users.UsersManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,13 +40,17 @@ public class InMemoryMessageHandler implements MessageHandler {
     @Override
     public Messages getUndeliveredMessages(String user) throws NoMessageException {
         messagesLock.lock();
-        List<Message> messageList = undeliveredMessages.get(user);
-        if (messageList.isEmpty()) {
-            throw new NoMessageException();
+        Messages messages;
+        try {
+            List<Message> messageList = undeliveredMessages.get(user);
+            if (messageList.isEmpty()) {
+                throw new NoMessageException();
+            }
+            messages = new Messages(messageList);
+            undeliveredMessages.removeAll(user);
+        } finally {
+            messagesLock.unlock();
         }
-        Messages messages = new Messages(messageList);
-        undeliveredMessages.removeAll(user);
-        messagesLock.unlock();
         return messages;
     }
 }
